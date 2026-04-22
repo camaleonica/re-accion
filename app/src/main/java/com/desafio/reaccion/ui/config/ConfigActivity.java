@@ -1,4 +1,4 @@
-package com.desafio.reaccion;
+package com.desafio.reaccion.ui.config;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import com.desafio.reaccion.R;
+import com.desafio.reaccion.ui.game.GameActivity;
+import com.desafio.reaccion.utils.GameConfig;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -19,32 +22,24 @@ public class ConfigActivity extends AppCompatActivity {
     public static final String EXTRA_MAX_TIME    = "max_time";
     public static final String EXTRA_ITERATIONS  = "iterations";
 
-    public static final String MODE_TRAINING = "Entrenamiento";
-    public static final String MODE_EASY     = "Facil";
-    public static final String MODE_MEDIUM   = "Medio";
-    public static final String MODE_HARD     = "Dificil";
-
-    private static final String[] MODE_LABELS =
-            {"Entrenamiento", "F\u00e1cil", "Medio", "Dif\u00edcil"};
-    private static final String[] MODES =
-            {MODE_TRAINING, MODE_EASY, MODE_MEDIUM, MODE_HARD};
-
-    private static final int DEFAULT_ITERATIONS  = 20;
-    private static final int DEFAULT_EASY_TIME   = 20;
-    private static final int DEFAULT_MEDIUM_TIME = 15;
-    private static final int DEFAULT_HARD_TIME   = 10;
-
     private static final String PREFS_NAME      = "DesafioPrefs";
     private static final String KEY_PLAYER_NAME = "last_player_name";
 
-    private TextInputEditText   etPlayerName;
-    private AutoCompleteTextView actvMode;
-    private TextInputEditText   etIterations;
-    private Slider              sliderTime;
-    private TextView            tvTimeValue;
+    private static final String[] MODE_LABELS =
+            {"Entrenamiento", "F\u00e1cil", "Medio", "Dif\u00edcil"};
+    private static final String[] MODES = {
+            GameConfig.MODE_TRAINING, GameConfig.MODE_EASY,
+            GameConfig.MODE_MEDIUM,   GameConfig.MODE_HARD
+    };
 
-    private int selectedModeIndex = 1; // Fácil por defecto
-    private int currentMaxTime    = DEFAULT_EASY_TIME;
+    private TextInputEditText    etPlayerName;
+    private AutoCompleteTextView actvMode;
+    private TextInputEditText    etIterations;
+    private Slider               sliderTime;
+    private TextView             tvTimeValue;
+
+    private int selectedModeIndex = 1;
+    private int currentMaxTime    = GameConfig.DEFAULT_EASY_TIME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +53,6 @@ public class ConfigActivity extends AppCompatActivity {
         tvTimeValue  = findViewById(R.id.tv_time_value);
         findViewById(R.id.btn_start).setOnClickListener(v -> startGame());
 
-        // Restaurar último nombre
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String savedName = prefs.getString(KEY_PLAYER_NAME, "");
         if (!savedName.isEmpty()) {
@@ -66,27 +60,26 @@ public class ConfigActivity extends AppCompatActivity {
             etPlayerName.setSelection(savedName.length());
         }
 
-        etIterations.setText(String.valueOf(DEFAULT_ITERATIONS));
+        etIterations.setText(String.valueOf(GameConfig.DEFAULT_ITERATIONS));
 
-        // Dropdown de modos
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, MODE_LABELS);
         actvMode.setAdapter(adapter);
         actvMode.setText(MODE_LABELS[selectedModeIndex], false);
         actvMode.setOnItemClickListener((parent, view, pos, id) -> {
             selectedModeIndex = pos;
-            switch (MODES[pos]) {
-                case MODE_MEDIUM: currentMaxTime = DEFAULT_MEDIUM_TIME; break;
-                case MODE_HARD:   currentMaxTime = DEFAULT_HARD_TIME;   break;
-                default:          currentMaxTime = DEFAULT_EASY_TIME;   break;
-            }
+            if (GameConfig.MODE_MEDIUM.equals(MODES[pos]))
+                currentMaxTime = GameConfig.DEFAULT_MEDIUM_TIME;
+            else if (GameConfig.MODE_HARD.equals(MODES[pos]))
+                currentMaxTime = GameConfig.DEFAULT_HARD_TIME;
+            else
+                currentMaxTime = GameConfig.DEFAULT_EASY_TIME;
             sliderTime.setValue(currentMaxTime);
             tvTimeValue.setText(currentMaxTime + "s");
         });
 
-        // Slider de tiempo
-        sliderTime.setValue(DEFAULT_EASY_TIME);
-        tvTimeValue.setText(DEFAULT_EASY_TIME + "s");
+        sliderTime.setValue(GameConfig.DEFAULT_EASY_TIME);
+        tvTimeValue.setText(GameConfig.DEFAULT_EASY_TIME + "s");
         sliderTime.addOnChangeListener((slider, value, fromUser) -> {
             currentMaxTime = (int) value;
             tvTimeValue.setText(currentMaxTime + "s");
@@ -109,9 +102,9 @@ public class ConfigActivity extends AppCompatActivity {
             String raw = etIterations.getText() != null
                     ? etIterations.getText().toString().trim() : "";
             iterations = Integer.parseInt(raw);
-            if (iterations < 1) iterations = DEFAULT_ITERATIONS;
+            if (iterations < 1) iterations = GameConfig.DEFAULT_ITERATIONS;
         } catch (NumberFormatException e) {
-            iterations = DEFAULT_ITERATIONS;
+            iterations = GameConfig.DEFAULT_ITERATIONS;
         }
 
         Intent intent = new Intent(this, GameActivity.class);

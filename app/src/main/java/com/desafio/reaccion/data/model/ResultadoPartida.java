@@ -1,4 +1,4 @@
-package com.desafio.reaccion.db;
+package com.desafio.reaccion.data.model;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -11,8 +11,8 @@ public class ResultadoPartida {
 
     public String jugador;
     public int    puntos;
-    public long   tiempoPromedio; // milliseconds
+    public long   tiempoPromedio;
     public String modo;
     public int    nivelAlcanzado;
-    public long   fecha;          // epoch milliseconds
+    public long   fecha;
 }

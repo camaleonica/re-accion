@@ -1,4 +1,4 @@
-package com.desafio.reaccion;
+package com.desafio.reaccion.ui.result;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,13 +6,16 @@ import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
+import com.desafio.reaccion.R;
+import com.desafio.reaccion.data.model.ResultadoPartida;
+import com.desafio.reaccion.repository.ResultadoRepository;
+import com.desafio.reaccion.ui.config.ConfigActivity;
+import com.desafio.reaccion.ui.stats.StatsActivity;
+import com.desafio.reaccion.utils.GameConfig;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.desafio.reaccion.db.AppDatabase;
-import com.desafio.reaccion.db.ResultadoPartida;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.Executors;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -40,9 +43,8 @@ public class ResultActivity extends AppCompatActivity {
         int     level        = getIntent().getIntExtra(EXTRA_LEVEL, 1);
         boolean completed    = getIntent().getBooleanExtra(EXTRA_COMPLETED, false);
         int     correctCount = getIntent().getIntExtra(EXTRA_CORRECT_COUNT, 0);
-        boolean isTraining   = ConfigActivity.MODE_TRAINING.equals(mode);
+        boolean isTraining   = GameConfig.MODE_TRAINING.equals(mode);
 
-        // Etiqueta pequeña + estado grande
         TextView tvTitle  = findViewById(R.id.tv_result_title);
         TextView tvStatus = findViewById(R.id.tv_result_status);
         if (completed) {
@@ -65,27 +67,23 @@ public class ResultActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tv_result_player)).setText(playerName);
         ((TextView) findViewById(R.id.tv_result_mode)).setText(mode.toUpperCase(Locale.getDefault()));
 
-        // Puntos grande
         TextView tvPoints      = findViewById(R.id.tv_result_points);
         TextView tvPuntosLabel = findViewById(R.id.tv_puntos_label);
         if (isTraining) {
-            tvPoints.setText("—");
+            tvPoints.setText("\u2014");
             tvPuntosLabel.setVisibility(View.GONE);
         } else {
             tvPoints.setText(String.valueOf(points));
         }
 
-        // Tarjeta 1: tiempo promedio
         TextView tvAvg = findViewById(R.id.tv_stat_avg);
         tvAvg.setText(avgTime > 0
                 ? String.format(Locale.getDefault(), "%d ms", avgTime)
-                : "— ms");
+                : "\u2014 ms");
 
-        // Tarjeta 2: nivel alcanzado
         ((TextView) findViewById(R.id.tv_stat_level)).setText(level + " / 3");
-
-        // Tarjeta 3: respuestas correctas + rango de tiempos
         ((TextView) findViewById(R.id.tv_stat_correct)).setText(String.valueOf(correctCount));
+
         TextView tvTimes = findViewById(R.id.tv_stat_times);
         if (correctCount > 0) {
             tvTimes.setText(String.format(Locale.getDefault(),
@@ -94,7 +92,6 @@ public class ResultActivity extends AppCompatActivity {
             tvTimes.setText("");
         }
 
-        // Banner de récord (solo modos puntuados)
         MaterialCardView cardRecord = findViewById(R.id.card_record);
 
         if (!isTraining) {
@@ -106,14 +103,8 @@ public class ResultActivity extends AppCompatActivity {
             r.nivelAlcanzado = level;
             r.fecha          = new Date().getTime();
 
-            Executors.newSingleThreadExecutor().execute(() -> {
-                AppDatabase db = AppDatabase.getInstance(this);
-                Integer prevBest = db.resultadoDAO().getMejorPuntaje(playerName, mode);
-                boolean isRecord = prevBest != null && points > prevBest;
-                db.resultadoDAO().insertar(r);
-                runOnUiThread(() -> {
-                    if (isRecord) cardRecord.setVisibility(View.VISIBLE);
-                });
+            new ResultadoRepository(this).guardarPartida(r, isRecord -> {
+                if (isRecord) cardRecord.setVisibility(View.VISIBLE);
             });
         }
 

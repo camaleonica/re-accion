@@ -1,12 +1,13 @@
-package com.desafio.reaccion.db;
+package com.desafio.reaccion.data.db;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
+import com.desafio.reaccion.data.model.ResultadoPartida;
 import java.util.List;
 
 @Dao
-public interface ResultadoDAO {
+public interface ResultadoDao {
 
     @Insert
     void insertar(ResultadoPartida resultado);

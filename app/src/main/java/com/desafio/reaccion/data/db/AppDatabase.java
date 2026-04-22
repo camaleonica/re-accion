@@ -1,16 +1,17 @@
-package com.desafio.reaccion.db;
+package com.desafio.reaccion.data.db;
 
 import android.content.Context;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import com.desafio.reaccion.data.model.ResultadoPartida;
 
 @Database(entities = {ResultadoPartida.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase instance;
 
-    public abstract ResultadoDAO resultadoDAO();
+    public abstract ResultadoDao resultadoDao();
 
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {

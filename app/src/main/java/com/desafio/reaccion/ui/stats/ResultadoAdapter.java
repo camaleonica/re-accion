@@ -1,4 +1,4 @@
-package com.desafio.reaccion.adapter;
+package com.desafio.reaccion.ui.stats;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.desafio.reaccion.R;
-import com.desafio.reaccion.db.ResultadoPartida;
+import com.desafio.reaccion.data.model.ResultadoPartida;
 import com.google.android.material.card.MaterialCardView;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,9 +17,8 @@ import java.util.Locale;
 
 public class ResultadoAdapter extends RecyclerView.Adapter<ResultadoAdapter.ViewHolder> {
 
-
     private final List<ResultadoPartida> items;
-    private final String highlightPlayer; // puede ser null
+    private final String highlightPlayer;
 
     public ResultadoAdapter(List<ResultadoPartida> items, String highlightPlayer) {
         this.items           = items;
@@ -38,18 +37,14 @@ public class ResultadoAdapter extends RecyclerView.Adapter<ResultadoAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ResultadoPartida r = items.get(position);
 
-        // Posición en el ranking (1-based)
         holder.tvRank.setText(String.format(Locale.getDefault(), "#%d", position + 1));
-
         holder.tvJugador.setText(r.jugador);
         holder.tvPuntos.setText(String.format(Locale.getDefault(), "%d pts", r.puntos));
         holder.tvModo.setText(r.modo + " \u2014 Nivel " + r.nivelAlcanzado + "/3");
-        holder.tvTiempo.setText(String.format(Locale.getDefault(),
-                "Promedio: %d ms", r.tiempoPromedio));
+        holder.tvTiempo.setText(String.format(Locale.getDefault(), "Promedio: %d ms", r.tiempoPromedio));
         holder.tvFecha.setText(new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
                 .format(new Date(r.fecha)));
 
-        // Resaltar la tarjeta del jugador actual
         boolean isHighlighted = highlightPlayer != null
                 && highlightPlayer.equalsIgnoreCase(r.jugador);
         MaterialCardView card = (MaterialCardView) holder.itemView;
